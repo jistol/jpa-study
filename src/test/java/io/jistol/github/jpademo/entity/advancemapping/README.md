@@ -78,3 +78,41 @@ Hibernate: insert into album (name, price, artist, item_id) values (?, ?, ?, ?)
 Hibernate: insert into movie (name, price, actor, director, item_id) values (?, ?, ?, ?, ?)
 Hibernate: insert into book (name, price, author, isbn, item_id) values (?, ?, ?, ?, ?)
 ```
+
+@MappedSuperclass
+----
+- 매핑 정보를 상속할 목적으로만 사용
+- @AttributeOverride : 부모 매핑정보 재정의
+- @AssociationOverride : 부모 연관관계 재정의시 사용
+- em.find() / JPQL에서 사용 불가
+
+```text
+Hibernate: insert into member (member_name, member_id) values (?, ?)
+Hibernate: insert into user (username, id) values (?, ?)
+```
+
+[/src/test/java/io/jistol/github/jpademo/entity/advancemapping/mappedsuperclass](/src/test/java/io/jistol/github/jpademo/entity/advancemapping/mappedsuperclass)
+
+복합키와 식별 관계 매핑
+----
+- 식별관계 : (부모 기본키 + 외래키)를 기본키로 사용하는 자식 테이블
+- 비식별관계 : 부모 기본키를 참조용(FK)로만 사용
+- 필수적 비식별 관계(Mandatory) : 외래키 NotNull
+- 선택적 비식별 관계(Optional) : 외래키 Nullable
+
+@IdClass
+----
+- 관계형 데이터베이스에 가까운 방법
+- 식별자 클래스의 속성명과 Entity에서 사용하는 식별자의 속성명이 같아야 한다
+- Serializable 인터페이스를 구현해야한다
+- equals, hashcode를 구현해야한다
+- 기본 생성자 필요
+- public class
+
+[/src/test/java/io/jistol/github/jpademo/entity/advancemapping/idclass](/src/test/java/io/jistol/github/jpademo/entity/advancemapping/idclass)
+
+
+```text
+Hibernate: insert into parent (name, parent_id1, parent_id2) values (?, ?, ?)
+Hibernate: insert into child (parent_id1, parent_id2, id) values (?, ?, ?)
+```
