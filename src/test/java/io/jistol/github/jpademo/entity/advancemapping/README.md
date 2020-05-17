@@ -1,0 +1,62 @@
+# 7장. 고급맵핑 #
+
+상속 관계 매핑
+----
+- 객체의 상속관계를 DB에서 표현하는 방법
+- DB에는 상속관계가 없음. Super - Sub 타입관계모델
+- 조인전략/단일테이블전략/구현클래스별 테이블전략 존재
+
+조인전략 (InheritanceType.JOINED)
+----
+- 각 Entity를 테이블로 만들고 부모객체의 PK를 받아 PK+FK로 사용
+- 조회시 조인하여 사용 되며 구분컬럼(DTYPE)으로 구분
+- JPA표준명세에는 구분컬럼을 사용하도록 되어 있으나 hibernate는 구분컬럼 없이도 동작 (FlatXXX 객체 참고)
+- 부모객체 컬럼명을 기본키로 사용하나 @PrimaryKeyJoinColumn으로 컬럼명 변경가능
+- 장점 : 정규화/외래키 참조 무결성/효율적인 저장공간사용
+- 단점 : 조인으로 인한 성능저하 / 조회 쿼리 복잡 / INSERT SQL을 두번 실행
+
+[/src/test/java/io/jistol/github/jpademo/entity/advancemapping/join](/src/test/java/io/jistol/github/jpademo/entity/advancemapping/join)
+
+### 구분컬럼을 포함하여 동작 ###
+```text
+Hibernate: create sequence hibernate_sequence start with 1 increment by 1
+Hibernate: create table album (artist varchar(255), item_id bigint not null, primary key (item_id))
+Hibernate: create table book (author varchar(255), isbn varchar(255), book_id bigint not null, primary key (book_id))
+Hibernate: create table item (dtype varchar(31) not null, item_id bigint not null, name varchar(255), price integer not null, primary key (item_id))
+Hibernate: create table movie (actor varchar(255), director varchar(255), item_id bigint not null, primary key (item_id))
+
+Hibernate: insert into item (name, price, dtype, item_id) values (?, ?, 'A', ?)
+Hibernate: insert into album (artist, item_id) values (?, ?)
+Hibernate: insert into item (name, price, dtype, item_id) values (?, ?, 'M', ?)
+Hibernate: insert into movie (actor, director, item_id) values (?, ?, ?)
+Hibernate: insert into item (name, price, dtype, item_id) values (?, ?, 'B', ?)
+Hibernate: insert into book (author, isbn, book_id) values (?, ?, ?)
+```
+
+### 구분컬럼 없이 동작 ###
+```text
+Hibernate: create table flat_book (author varchar(255), flat_item_id bigint not null, primary key (flat_item_id))
+Hibernate: create table flat_item (flat_item_id bigint not null, name varchar(255), primary key (flat_item_id))
+
+Hibernate: insert into flat_item (name, flat_item_id) values (?, ?)
+Hibernate: insert into flat_book (author, flat_item_id) values (?, ?)
+```
+
+단일 테이블 전략 (InheritanceType.SINGLE_TABLE)
+----
+- 테이블 하나에 모두 저장, 구분컬럼을 통해 어떤 Sub Entity가 저장됬는지 구분한다
+- Sub Entity가 매핑한 컬람은 모두 null을 허용해야 한다
+- 구분컬럼이 반드시 있어야 한다
+- @DiscriminatorValue를 지정하지 않으면 기본적으로 Entity이름을 사용
+- 장점 : 조인이 없어 조회성능 빠름 / 쿼리단순
+- 단점 : sub Entity가 매핑한 컬럼은 모두 nullable / 테이블이 커져 조회성능이 더 느려질 수 있음
+
+[/src/test/java/io/jistol/github/jpademo/entity/advancemapping/singletable](/src/test/java/io/jistol/github/jpademo/entity/advancemapping/singletable)
+
+```text
+Hibernate: create table item (dtype varchar(31) not null, item_id bigint not null, name varchar(255), price integer not null, artist varchar(255), author varchar(255), isbn varchar(255), actor varchar(255), director varchar(255), primary key (item_id))
+
+Hibernate: insert into item (name, price, artist, dtype, item_id) values (?, ?, ?, 'Album', ?)
+Hibernate: insert into item (name, price, actor, director, dtype, item_id) values (?, ?, ?, ?, 'M', ?)
+Hibernate: insert into item (name, price, author, isbn, dtype, item_id) values (?, ?, ?, ?, 'B', ?)
+```
