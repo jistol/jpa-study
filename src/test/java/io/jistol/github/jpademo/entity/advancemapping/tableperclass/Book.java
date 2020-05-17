@@ -1,4 +1,4 @@
-package io.jistol.github.jpademo.entity.advancemapping.singletable;
+package io.jistol.github.jpademo.entity.advancemapping.tableperclass;
 
 import lombok.Data;
 
@@ -8,7 +8,6 @@ import javax.persistence.PrimaryKeyJoinColumn;
 
 @Data
 @Entity
-@DiscriminatorValue("B")
 public class Book extends Item {
     private String author;
     private String isbn;

@@ -60,3 +60,21 @@ Hibernate: insert into item (name, price, artist, dtype, item_id) values (?, ?, 
 Hibernate: insert into item (name, price, actor, director, dtype, item_id) values (?, ?, ?, ?, 'M', ?)
 Hibernate: insert into item (name, price, author, isbn, dtype, item_id) values (?, ?, ?, ?, 'B', ?)
 ```
+
+구현 클래스마다 테이블 전략
+----
+- 구현한 Entity마다 super-sub type 통합된 테이블을 생성한다
+- 구분 컬럼을 사용하지 않음
+- 일반적으로 추천하지 않는다
+- 장점 : 서브타입 구분처리시 효과적 / not null 사용 가능
+- 단점 : 여러 sub테이블 조회시 UNION사용 -> 느림 / sub테이블 통합쿼리하기 어려움
+
+```text
+Hibernate: create table album (item_id bigint not null, name varchar(255), price integer not null, artist varchar(255), primary key (item_id))
+Hibernate: create table book (item_id bigint not null, name varchar(255), price integer not null, author varchar(255), isbn varchar(255), primary key (item_id))
+Hibernate: create table movie (item_id bigint not null, name varchar(255), price integer not null, actor varchar(255), director varchar(255), primary key (item_id))
+
+Hibernate: insert into album (name, price, artist, item_id) values (?, ?, ?, ?)
+Hibernate: insert into movie (name, price, actor, director, item_id) values (?, ?, ?, ?, ?)
+Hibernate: insert into book (name, price, author, isbn, item_id) values (?, ?, ?, ?, ?)
+```
