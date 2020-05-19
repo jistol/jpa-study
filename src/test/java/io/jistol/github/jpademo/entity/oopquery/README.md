@@ -93,6 +93,80 @@ JPQL문법
 > 어플리케이션은 t를 Team에 할당하는 과정에서 중복제거한다
 - 객체그래프를 유지할때 효과적
 
+경로 표현식
+----
+- 점(.)을 통해 객체 그래프를 탐색
+- 상태필드 경로 탐색 : 경로 탐색의 끝, 탐색 불가
+- 단일값 연관경로 (@ManyToOne, @OneToOne) : 묵시적 조인, 계속 탐색 가능
+> 명시적 조인 : SELECT t.name FROM Member m JOIN m.team t
+> 묵시적 조인 : SELECT m.team.name FROM Member m
+> WHERE 절 : SELECT m FROM Member m WHERE m.team.name = :name
+- 컬렉션값 연관경로 (@OneToMany, @ManyToMany) : 묵시적 조인, 탐색 불가, 별칭 획득시 탐색 가능
+> SELECT t.members FROM Team t (O)
+> SELECT t.members.username FROM Team t (X)
+> SELECT m.username FROM Team t JOIN t.members m (O)
+> @Deprecated -> 컬렉션 크기를 구할 수 있는 size 기능 존재 (Integer) : SELECT t.members.size FROM Team t
+
+
+서브 쿼리
+----
+- WHERE, HAVING절에서 사용 가능 (SELECT/FROM절에서 사용 불가)
+- [NOT] EXISTS (subquery)
+- {ALL | ANY | SOME} (subquery)
+> 비교 연산자와 같이 사용
+> SELECT m FROM Member m WHERE m.age > ALL (SELECT t.age FROM Team t)
+- [NOT] IN (subquery)
+
+조건식
+----
+- 문자 : 작은따옴표(')
+- 숫자 : L (Long), D (Double), F (Float)
+- 날짜 : date {d 'yyyy-mm-dd'}, time {t 'hh-mm-ss'}, datetime {ts 'yyyy-mm-dd hh:mm:ss.f'}
+- boolean
+- Enum : 패키지명을 포함한 전체이름 사용
+- Entity Type : ex) TYPE(m) = Member
+- BETWEEN, IN , LIKE, NULL 비교 사용
+> LIKE : % (아무값이나 0개이상), _ (아무값이나 1개이상)
+- 컬렉션 식 : {collection} IS EMPTY, {value} MEMBER OF {collection}
+
+CASE 식
+----
+- CASE WHEN <..> THEN <..> ELSE <..>
+- CASE <T> WHEN <..> THEN <..> ELSE <..>
+- COALESCE : 차례대로 조회하여 null이 아니면 반환
+- NULLIF(A, B) : 두 값이 같으면 null, 다르면 첫번째 값  
+
+다형성 쿼리
+----
+- 상속관계 일 경우 부모를 조회하면 자식도 같이 조회된다
+- InheritanceType.SINGLE_TABLE : 단일 테이블로 조회됨
+- InheritanceType.JOINED : 자식 테이블이 모두 JOIN되어 조회
+- TYPE : 상속 주고에서 조회대상을 특정 자식으로 한정할 때 사용
+> SELECT i FROM Item i WHERE TYPE(i) IN (Book, Movie)
+- TREAT : 자바의 타입캐스팅과 비슷. 특정 자식 타입을 다룰때 사용
+> SELECT i FROM Item i WHERE TREAT(i as Book).author = 'kim'
+- 사용자 정의 함수 : 생략
+
+기타 정리
+----
+- enum은 = 비교연산만 지원
+- embedded타입은 비교를 지원하지 않음
+
+Entity 직접사용
+----
+- entity 객체 사용시 SQL문에서는 기본키 값으로 사용됨
+> count(m) == count(m.id)
+- 연관객체 조회시 외래키를 사용하면 묵시적 조인이 일어나지 않음
+> SELECT m FROM Member m WHERE m.team = :team --> 외래키를 사용하여 조인이 일어나지 않음
+> SELECT m FROM Member m WHERE m.team_id = :teamId 와 같다
+
+NamedQuery : 정적쿼리
+---- 
+- 미리 정의한 쿼리에 이름을 부여하여 사용
+- 어플리케이션 로딩 시점에 미리 문법 체크및 파싱
+- @NamedQuery / XML에 직접 정의가능
+- em.createNamedQuery(...)로 사용
+
 Criteria
 ----
 - JPQL 생성시 쿼리가 아닌 빌더 형식으로 생성
