@@ -49,7 +49,7 @@ public class SetupHelper {
         for (int i=1 ; i < memberCount ; i++) {
             Member m = new Member();
             m.setName("MEM" + i);
-            m.setAge(i % 5);
+            m.setAge((i + 20) % 25);
             m.setAddress(addressList.get(i >= addressList.size() ? i % addressList.size() : i));
             
             Team team = teamList.get(i >= teamList.size() ? i % teamList.size() : i);

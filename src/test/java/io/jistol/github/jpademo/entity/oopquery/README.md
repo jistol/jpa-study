@@ -174,6 +174,50 @@ Criteria
 - 동적쿼리 작성이 편하다
 - 복잡하고 불편
 
+criteria 쿼리 생성절차
+----
+1. EntityManager / EntityManagerFactory로부터 CriteriaBuilder를 생성
+- 빌더는 쿼리(CriteriaQuery)를 생성 할 수 있다.
+- 빌더는 조건문(Predicate)를 생성 할 수 있다.
+
+2. 빌더를 통해 쿼리(CriteriaQuery)를 생성
+- Type지정 쿼리 : cb.createQuery(T.class)
+- 미지정 쿼리 : cb.createQuery() -> Object[]타입
+- Tuple타입 쿼리 : cb.createTupleQuery()
+
+3. 조회 (cq:CriteriaQuery, cb:CriteriaBuilder)
+- 단건 조회 : cq.select(m) // JPQL : select m 
+- 멀티 조회1 : cq.multiselect(m.get("name"), m.get("age")) // JPQL : select name, age
+- 멀티 조회2 : cq.select(cb.array(m.get("name"), m.get("age"))) 
+- DISTINCT : cq.select(...).distinct(true)
+- GROUP BY : cq.groupBy(m.get("team"), m.get("name"))
+- HAVING : cq.having(cb.gt(minAge, 10))
+- ORDER BY : cb.desc(...), cb.asc(...)
+- NEW : cq.select(cb.construct(MemberDTO.class, m.get("name"))) // select new io.jistol.MemberDTO(m.name)
+- TUPLE : Map과 비슷한 구조, 이름기반이여서 Object[]보다 안전
+```java
+    public void tupleSelectTest() {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Tuple> cq = cb.createTupleQuery(); // eq : cb.createQuery(Tuple.class);
+        Root<Member> m = cq.from(Member.class);
+        Predicate where = cb.greaterThan(m.<Integer>get("age"), 10);
+        cq.multiselect(
+                m.get("name").alias("n"),
+                m.get("age").alias("a")
+        ).where(where);
+
+        List<Tuple> tuples = em.createQuery(cq).getResultList();
+        tuples.stream().forEach(tuple -> {
+            log.warn("name : {}, age : {}", tuple.get("n", String.class), tuple.get("a", Integer.class));
+        });
+    }
+```
+4. 조인
+- Root.join : m.join("team", JoinType.INNER) // JoinType.LEFT
+- fetch join : m.fetch("team", JoinType.LEFT)
+
+
 QueryDSL
 ----
 - JPQL 빌더, 코드기반에 단순하고 사용하기 쉬움
