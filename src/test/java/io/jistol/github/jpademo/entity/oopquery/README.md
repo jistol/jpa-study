@@ -232,6 +232,13 @@ QueryDSL
 ----
 - JPQL 빌더, 코드기반에 단순하고 사용하기 쉬움
 - 오픈소스로 JPA외에 JDO, 몽고DB, Lucene등 문법도 지원
+- com.querydsl 패키지는 4.* 의 기본 패키지로 기존 개발자인 mysema에서 querydsl team이 개발을 진행함에 따라 변경됨
+> com.mysema 패키지는 3.* 의 기본 패키지
+> [The difference between com.mysema.query and com.querydsl?
+](https://stackoverflow.com/questions/32469814/the-difference-between-com-mysema-query-and-com-querydsl)
+- AnnotationProcessing 기능 이용하여 Q클래스를 자동으로 생성. 
+> 이에 따른 별도 plugin 세팅이 필요하다
+> 
 
 JDBC 직접 사용
 ---
