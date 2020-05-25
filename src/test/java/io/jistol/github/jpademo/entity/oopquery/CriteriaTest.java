@@ -131,4 +131,41 @@ public class CriteriaTest {
         List<Member> members = em.createQuery(cq).getResultList();
         members.stream().forEach(mem -> log.warn("mem.name : {}, team.name : {}", mem.getName(), mem.getTeam().getName()));
     }
+
+    @Test
+    @DisplayName("간단한 서브쿼리 테스트")
+    public void simpleSubqueryTest() {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Member> cq = cb.createQuery(Member.class);
+
+        Subquery<Double> sq = cq.subquery(Double.class);
+        Root<Member> sm = sq.from(Member.class);
+        sq.select(cb.avg(sm.<Integer>get("age")));
+
+        Root<Member> m = cq.from(Member.class);
+        cq.select(m).where(cb.ge(m.<Integer>get("age"), sq));
+
+        List<Member> members = em.createQuery(cq).getResultList();
+        members.stream().forEach(mem -> log.warn("name : {}, age : {}", mem.getName(), mem.getAge()));
+    }
+
+    @Test
+    @DisplayName("상호관련 서브쿼리")
+    public void correlateSubqueryTest() {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Member> cq = cb.createQuery(Member.class);
+        Root<Member> m = cq.from(Member.class);
+
+        Subquery<Team> sq = cq.subquery(Team.class);
+        Root<Member> m2 = sq.correlate(m);
+        Join<Member, Team> j = m2.join("team");
+        sq.select(j).where(cb.equal(j.get("name"), "TEAM1"));
+
+        cq.select(m).where(cb.exists(sq));
+
+        List<Member> members = em.createQuery(cq).getResultList();
+        members.stream().forEach(mem -> log.warn("mem.name : {}", mem.getName()));
+    }
 }

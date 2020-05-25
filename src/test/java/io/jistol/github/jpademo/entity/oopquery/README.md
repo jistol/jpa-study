@@ -216,7 +216,17 @@ criteria 쿼리 생성절차
 4. 조인
 - Root.join : m.join("team", JoinType.INNER) // JoinType.LEFT
 - fetch join : m.fetch("team", JoinType.LEFT)
-
+5. 서브쿼리
+- 메인쿼리에서 파생 (cq.subquery(T.class))
+- 설정후 다시 메인쿼리에서 사용 (cb.select(...).where(cb.equals(subquery, 123)))
+- subquery.correlate(...)메서드를 통해 Entity간 연관성 설정간으
+6. IN : cb.in(...)
+7. CASE 식 
+- cb.selectCase() 사용
+- when / otherwise로 설정 
+8. 파라메터 정의 : 바인드변수 -> cb.parameter(T.class, "...")
+9. 네이티브 함수 호출 : cb.function()
+10. JPAMetaModelEntityProcessor를 통해 메타모델 API적용가능
 
 QueryDSL
 ----
