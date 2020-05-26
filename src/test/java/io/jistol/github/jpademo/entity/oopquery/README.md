@@ -231,18 +231,51 @@ criteria 쿼리 생성절차
 
 QueryDSL [http://www.querydsl.com/](http://www.querydsl.com/)
 ----
+- 문자가 아닌 코드로 안전하게 쿼리 작성
+- 복잡한 동적쿼리를 Builder기반으로 해결
 - JPQL 빌더, 코드기반에 단순하고 사용하기 쉬움
 - 오픈소스로 JPA외에 JDO, 몽고DB, Lucene등 문법도 지원
 - com.querydsl 패키지는 4.* 의 기본 패키지로 기존 개발자인 mysema에서 querydsl team이 개발을 진행함에 따라 변경됨
 > com.mysema 패키지는 3.* 의 기본 패키지       
 > [StackOverflow - The difference between com.mysema.query and com.querydsl?
 ](https://stackoverflow.com/questions/32469814/the-difference-between-com-mysema-query-and-com-querydsl)
-- AnnotationProcessing 기능 이용하여 Q클래스를 자동으로 생성. 
+- AnnotationProcessing 기능 이용하여 Q클래스를 자동으로 생성, 메타클래스 형식의 질의가 가능하다 
 > 이에 따른 별도 plugin 세팅이 필요하다
-> 
+- JPAQueryFactory를 사용하면 쿼리및 수정/삭제를 통합적으로 사용가능하다
+> JPAQuery - queryFactory.select() / selectFrom() / from()     
+> JPAUpdateClause - queryFactory.update()     
+> JPADeleteClause - queryFactory.delete()    
+- 조건문(where)생성시 BooleanBuilder를 사용하면 편하게 만들수 있다
+- @QueryDelegate를 이용하여 쿼리타입 검색조건을 직접 정의가능
+
+네이티브 SQL
+----
+- JPQL이 지원하지 않을 경우 사용
+> 특정DB만 지원하는 함수, 문법, 힌트    
+> 인라인뷰, UNION, INTERSECT, 프로시져(JPA 2.1부터사용가능)    
+- Entity조회 및 영속성 컨텍스트의 기능을 그대로 사용가능
+- @SqlResultSetMapping을 통해 결과 매핑 조정가능
+- @NamedNativeQuery를 통해 미리 지정 가능
+- XML에 설정 가능
+- 관리가 쉽지 않고 DB종속적이 됨
+- 권장 : JPQL사용 -> hibernate같은 구현체 제공 기능사용 -> 네이티브SQL사용 -> MyBatis같은 SQL매퍼사용
 
 JDBC 직접 사용
 ---
 - em.unwrap() 메서드를 통해 JDBC Session을 직접 얻어 사용 가능
-- 영속성 컨텍스트와 불일치 이슈 발생 (강제 flush필)
+- 영속성 컨텍스트와 불일치 이슈 발생 (강제 flush필요)
 
+객체지향 쿼리 심화
+----
+- 벌크연산 : executeUpdate() 사용    
+> 영속성 컨텍스트를 무시하고 DB에 직접 쿼리함    
+> 해결방법 : em.refresh() / 벌크연산 먼저 실행 / 벌크연산 실행후 컨텍스트 초기화     
+- Entity로 조회된 결과만 영속성 컨텍스트가 관리, 임베디드타입은 불가   
+> SELECT m FROM Member m // 관리(O)    
+> SELECT m.address FROM Member m // 임베디드타입 관리(X)     
+- JPQL로 DB조회 결과중 영속성 컨텍스트에 존재하는 Entity는 버리고 기존 Entity를 반환   
+> 영속상태 entity의 동일성 보장. (수정중 데이터가 사라질 수 있다)
+- em.find() : 1차캐시 활용
+- JPQL : 항상 DB에 쿼리, 실행전 항상 flush됨 
+> 플러시모드 기본은 AUTO : JPQL query / commit 시 flush됨    
+> 플러시모드 COMMIT : commit사만 flush. 최적화를 위해 사용    

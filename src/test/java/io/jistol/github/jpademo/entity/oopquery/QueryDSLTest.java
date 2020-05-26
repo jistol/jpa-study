@@ -1,5 +1,6 @@
 package io.jistol.github.jpademo.entity.oopquery;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.support.QueryBase;
 import com.querydsl.core.types.ConstructorExpression;
@@ -10,12 +11,14 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.jpa.impl.JPAUpdateClause;
 import io.jistol.github.jpademo.entity.oopquery.dto.MemTeamDTO;
 import io.jistol.github.jpademo.entity.oopquery.entity.Member;
 import io.jistol.github.jpademo.entity.oopquery.entity.QMember;
 import io.jistol.github.jpademo.entity.oopquery.entity.QTeam;
 import io.jistol.github.jpademo.entity.proxy.Team;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,6 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import java.util.List;
 import java.util.Optional;
 
@@ -163,5 +167,86 @@ public class QueryDSLTest {
                 .fetch();
 
         res.stream().forEach(dto -> log.warn("memName : {}, teamName : {}", dto.getMemberName(), dto.getTeamName()));
+    }
+
+    @Test
+    @DisplayName("JPAUpdateClause 수정 배치 쿼리 테스트")
+    public void batchUpdateClauseTest() {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        JPAUpdateClause updateClause = new JPAUpdateClause(em, QMember.member);
+        EntityTransaction et = em.getTransaction();
+        et.begin();
+        long count = updateClause.where(QMember.member.age.gt(10))
+                .set(QMember.member.name, QMember.member.name.append("XXX"))
+                .execute();
+        et.commit();
+        log.warn("update count : {}", count);
+
+        selectForUpdateResult("XXX");
+    }
+
+    @Test
+    @DisplayName("일반 수정 테스트")
+    public void updateTest() {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        EntityTransaction et = em.getTransaction();
+        et.begin();
+
+        JPAQueryFactory query = new JPAQueryFactory(em);
+        long count = query.update(QMember.member)
+                .where(QMember.member.age.gt(20))
+                .set(QMember.member.name, QMember.member.name.append("XXX"))
+                .execute();
+
+        log.warn("update count : {}", count);
+        et.commit();
+
+        selectForUpdateResult("XXX");
+    }
+
+    private void selectForUpdateResult(String suffix) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        JPAQueryFactory query = new JPAQueryFactory(em);
+        List<Member> members = query.selectFrom(QMember.member)
+                .where(QMember.member.name.endsWith(suffix))
+                .fetch();
+
+        members.stream().forEach(mem -> log.warn("name : {}, age : {}", mem.getName(), mem.getAge()));
+    }
+
+    @Test
+    @DisplayName("Builder를 통한 동적쿼리")
+    public void dynamicQueryByBuilder() {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        JPAQueryFactory query = new JPAQueryFactory(em);
+
+        BooleanBuilder builder = new BooleanBuilder();
+        if (RandomUtils.nextBoolean()) {
+            builder.and(QMember.member.age.gt(15));
+        }
+
+        if (RandomUtils.nextBoolean()) {
+            builder.and(QMember.member.age.lt(20));
+        }
+
+        if (RandomUtils.nextBoolean()) {
+            builder.and(QMember.member.age.ne(18));
+        }
+
+        List<Member> members = query.selectFrom(QMember.member).where(builder).fetch();
+        members.stream().forEach(mem -> log.warn("name : {}, age : {}", mem.getName(), mem.getAge()));
+    }
+
+    @Test
+    @DisplayName("메소드 위임 테스트")
+    public void methodDelegateTest() {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        JPAQueryFactory query = new JPAQueryFactory(em);
+        List<Member> members = query.selectFrom(QMember.member)
+                .where(QMember.member.isOldAge())
+                .fetch();
+
+        members.stream().forEach(mem -> log.warn("age : {}", mem.getAge()));
+
     }
 }
