@@ -1,13 +1,16 @@
 package io.jistol.github.jpademo.entity.springdatajpa.repository;
 
 import io.jistol.github.jpademo.entity.springdatajpa.entity.Member;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface MemberRespository extends JpaRepository<Member, Long> {
+@Profile("springdatajpa")
+public interface SpringDataJpaMemberRepository extends JpaRepository<Member, Long>, QuerydslPredicateExecutor<Member> {
     List<Member> findByAddressCityAndAddressZipcode(String city, String zipcode);
 
     List<Member> findByInfo(@Param("name") String name, @Param("age") int age);
