@@ -21,3 +21,10 @@
 > 위치값 변경시 각 Entity의 순서 변경을 위한 쿼리를 N번 실행한다    
 > 중간에 순서가 빌 경우 List에는 null을 보관한다    
 - @OrderBy : 컬렉션 정렬을 지정    
+
+@Convert
+----
+- Entity <-> DB간 데이터 변환 지원
+- @Converter + AttributeConvert<E,D> 인터페이스 구현
+- @Convert 어노테이션으로 제어하며 필드에 직접 지정하거나 클래스에 지정할 수 있다
+- @Converter 어노테이션을 통해 글로벌 설정 가능

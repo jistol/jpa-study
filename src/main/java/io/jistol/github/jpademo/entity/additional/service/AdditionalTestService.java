@@ -17,7 +17,7 @@ public class AdditionalTestService {
     @PersistenceContext
     private EntityManager em;
 
-    private Company getCompany() {
+    public Company getCompany() {
         JPAQueryFactory query = new JPAQueryFactory(em);
         return query.selectFrom(QCompany.company).limit(1).fetchOne();
     }

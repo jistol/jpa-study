@@ -22,6 +22,7 @@ public class SetupHelper {
     public Company genCompany(int i) {
         Company company = new Company();
         company.setName("COM" + i);
+        company.setIsCommerce(Boolean.TRUE);
         return company;
     }
 

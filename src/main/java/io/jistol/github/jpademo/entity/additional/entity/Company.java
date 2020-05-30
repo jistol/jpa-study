@@ -1,13 +1,11 @@
 package io.jistol.github.jpademo.entity.additional.entity;
 
+import io.jistol.github.jpademo.entity.additional.converter.BooleanToYNConverter;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.*;
 
 @Data
@@ -20,6 +18,9 @@ public class Company {
     private Long id;
 
     private String name;
+
+    @Convert(converter = BooleanToYNConverter.class)
+    private Boolean isCommerce;
 
     @OneToMany(mappedBy = "company")
     private Collection<GoldMember> golds = new ArrayList<>();
