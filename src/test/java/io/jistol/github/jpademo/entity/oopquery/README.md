@@ -41,7 +41,7 @@ JPQL문법
 프로젝션
 ----
 - 조회할 대상을 지정하는 것
-- Entity 프로젝션 : 결과 값은 entity로 받음 (SELECT m FROM Member m / SELECT m.team FROM Member m)
+- Entity 프로젝션 : 결과 값은 entity로 받음 (SELECT m FROM Member m / SELECT m.company FROM Member m)
 - Embedded Type 프로젝션 : 결과 값은 임베디드 타입으로 받음 
 > 임베디드 타입은 entity가 아니기 때문에 직접 조회 불가. Entity를 조회하여 하위 값인 임베디드 객체를 받아야 한다.    
 > ex : SELECT a FROM Address a (X) -> SELECT m.address FROM Member m (O)    
@@ -69,7 +69,7 @@ JPQL문법
 조인
 ----
 - INNER JOIN의 경우 INNER 생략가능 (다대일)
-> ex) SELECT t FROM Member m JOIN m.team t (O)
+> ex) SELECT t FROM Member m JOIN m.company t (O)
 > ex) SELECT t FROM Member m JOIN Team t (X)     
 - LEFT OUTER JOIN의 경우 OUTER 생략가능
 - 컬렉션 조인 : 일대다/다대다 관계로 조인조건에 컬렉션 값 연관필드를 사용
@@ -84,7 +84,7 @@ JPQL문법
 - 페치조인은 별칭부여 불가, SELECT/WHERE/SubQuery절에 사용불가 (hibernate는 별칭을 허용함)
 - 둘 이상의 컬렉션을 페치 할 수 없음(카테시안 곱이 만들어짐)
 - 지연로딩이 일어나지 않음
-> ex) SELECT m FROM Member m JOIN FETCH m.team
+> ex) SELECT m FROM Member m JOIN FETCH m.company
 - 컬렉션 페치 조인 : 일대다/다대다 관계로 페치조인. 결과가 증가 할 수 있다.
 > 페이징 API 사용불가     
 > hibernate의 경우 경고노출후 메모리에서 페이징한다     
@@ -99,9 +99,9 @@ JPQL문법
 - 점(.)을 통해 객체 그래프를 탐색
 - 상태필드 경로 탐색 : 경로 탐색의 끝, 탐색 불가
 - 단일값 연관경로 (@ManyToOne, @OneToOne) : 묵시적 조인, 계속 탐색 가능
-> 명시적 조인 : SELECT t.name FROM Member m JOIN m.team t     
-> 묵시적 조인 : SELECT m.team.name FROM Member m     
-> WHERE 절 : SELECT m FROM Member m WHERE m.team.name = :name     
+> 명시적 조인 : SELECT t.name FROM Member m JOIN m.company t     
+> 묵시적 조인 : SELECT m.company.name FROM Member m     
+> WHERE 절 : SELECT m FROM Member m WHERE m.company.name = :name     
 - 컬렉션값 연관경로 (@OneToMany, @ManyToMany) : 묵시적 조인, 탐색 불가, 별칭 획득시 탐색 가능
 > SELECT t.members FROM Team t (O)     
 > SELECT t.members.username FROM Team t (X)     
@@ -158,7 +158,7 @@ Entity 직접사용
 - entity 객체 사용시 SQL문에서는 기본키 값으로 사용됨
 > count(m) == count(m.id)
 - 연관객체 조회시 외래키를 사용하면 묵시적 조인이 일어나지 않음
-> SELECT m FROM Member m WHERE m.team = :team --> 외래키를 사용하여 조인이 일어나지 않음       
+> SELECT m FROM Member m WHERE m.company = :company --> 외래키를 사용하여 조인이 일어나지 않음       
 > SELECT m FROM Member m WHERE m.team_id = :teamId 와 같다      
 
 NamedQuery : 정적쿼리
@@ -191,7 +191,7 @@ criteria 쿼리 생성절차
 - 멀티 조회1 : cq.multiselect(m.get("name"), m.get("age")) // JPQL : select name, age
 - 멀티 조회2 : cq.select(cb.array(m.get("name"), m.get("age"))) 
 - DISTINCT : cq.select(...).distinct(true)
-- GROUP BY : cq.groupBy(m.get("team"), m.get("name"))
+- GROUP BY : cq.groupBy(m.get("company"), m.get("name"))
 - HAVING : cq.having(cb.gt(minAge, 10))
 - ORDER BY : cb.desc(...), cb.asc(...)
 - NEW : cq.select(cb.construct(MemberDTO.class, m.get("name"))) // select new io.jistol.MemberDTO(m.name)
@@ -215,8 +215,8 @@ criteria 쿼리 생성절차
     }
 ```
 4. 조인
-- Root.join : m.join("team", JoinType.INNER) // JoinType.LEFT
-- fetch join : m.fetch("team", JoinType.LEFT)
+- Root.join : m.join("company", JoinType.INNER) // JoinType.LEFT
+- fetch join : m.fetch("company", JoinType.LEFT)
 5. 서브쿼리
 - 메인쿼리에서 파생 (cq.subquery(T.class))
 - 설정후 다시 메인쿼리에서 사용 (cb.select(...).where(cb.equals(subquery, 123)))
