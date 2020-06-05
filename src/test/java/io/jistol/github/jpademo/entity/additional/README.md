@@ -28,3 +28,23 @@
 - @Converter + AttributeConvert<E,D> 인터페이스 구현
 - @Convert 어노테이션으로 제어하며 필드에 직접 지정하거나 클래스에 지정할 수 있다
 - @Converter 어노테이션을 통해 글로벌 설정 가능
+
+@Listener
+----
+- 엔티티 생명주기에 따른 이벤트 처리 지원
+- PostLoad, {Pre|Post}{Persist|Update|Remove}
+- 엔티티 직접적용 (어노테이션 이용)
+- 별도 Listener클래스를 만들고 엔티티클래스에 @EntityListeners로 등록
+- default 리스너로 등록
+- 여러 리스너 등록시 (기본리스너 -> 부모클래스 리스너 -> 리스너 -> 엔티티) 순으로 동작
+- 기본리스너 무시 @ExcludeDefaultListners
+- 상위 클래스 이벤트 리스너 무시 @ExcludeSuperclassListeners
+
+엔티티그래프
+----
+- 엔티티 조회 시점에 연관된 엔티티들을 함께 조회하는 기능
+- 엔티티 클래스에 @NamedEntityGraph 지정 
+- 연관 엔티티와 연관된 sub 엔티티도 같이 조회하기 위해서는 @NamedSubgraph를 사용    
+- setHint메서드를 통해 JPQL에서도 사용가능
+- QueryDsl에서는 직접 쿼리문은 만들기 때문에 setHint로 지정하기 보단 직접 fetchJoin을 걸어야 적용된다    
+ 

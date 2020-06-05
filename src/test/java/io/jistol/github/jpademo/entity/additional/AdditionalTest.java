@@ -2,6 +2,8 @@ package io.jistol.github.jpademo.entity.additional;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.jistol.github.jpademo.entity.additional.entity.Company;
+import io.jistol.github.jpademo.entity.additional.entity.GoldMember;
+import io.jistol.github.jpademo.entity.additional.entity.QGoldMember;
 import io.jistol.github.jpademo.entity.additional.service.AdditionalTestService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,9 +14,12 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -72,10 +77,41 @@ public class AdditionalTest {
         assertEquals(results.size(), 1);
         Company com2 = results.get(0);
         log.warn("com2 - id : {}, isCommerce : {}", com2.getId(), com2.getIsCommerce());
+    }
 
+    @Test
+    @DisplayName("@NamedEntityGraph 테스트")
+    public void namedEntityGraphTest() {
+        log.warn("start select named entity graph!!!!");
+        EntityGraph graph = em.getEntityGraph("GoldMember.withOrderInfos");
+        Map hints = new HashMap<>();
+        hints.put("javax.persistence.fetchgraph", graph);
+        Long id = service.getGoldMemberFirst().getId();
+        GoldMember goldMember1 = em.find(GoldMember.class, id, hints);
+        log.warn("id : {}, order size : {}", goldMember1.getId(), goldMember1.getOrderInfos().size());
+        goldMember1.getOrderInfos().stream()
+                .forEach(o -> log.warn("order id : {}", o.getId()));
+        service.findOrderInfoByGoldMemberId(id).stream()
+                .forEach(o -> log.warn("find order id : {}", o.getId()));
+    }
 
-
-
-
+    @Test
+    @DisplayName("@NamedSubgraph 테스트")
+    public void namedSubgraphTest() {
+        log.warn("start!!!");
+        EntityGraph graph = em.getEntityGraph("GoldMember.withAll");
+        Map hints = new HashMap();
+        hints.put("javax.persistence.fetchgraph", graph);
+        Long id = service.getGoldMemberFirst().getId();
+        GoldMember goldMember1 = em.find(GoldMember.class, id, hints);
+        log.warn("id : {}, order size : {}", goldMember1.getId(), goldMember1.getOrderInfos().size());
+        goldMember1.getOrderInfos().stream()
+                .peek(o -> log.warn("order id : {}", o.getId()))
+                .flatMap(o -> o.getItems().stream())
+                .forEach(i -> log.warn("item id : {}", i.getId()));
+        service.findOrderInfoByGoldMemberId(id).stream()
+                .peek(o -> log.warn("find order id : {}", o.getId()))
+                .flatMap(o -> o.getItems().stream())
+                .forEach(i -> log.warn("find item id : {}", i.getId()));
     }
 }

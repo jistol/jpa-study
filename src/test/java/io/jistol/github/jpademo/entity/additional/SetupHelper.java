@@ -8,9 +8,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Component("additionalSetupHelper")
@@ -34,6 +36,23 @@ public class SetupHelper {
         };
     }
 
+    public List<OrderInfo> genOrders(int cnt, GoldMember mem) {
+        return IntStream.range(1, cnt)
+                .mapToObj(i -> new OrderInfo("ORDER" + i))
+                .peek(o -> o.setGoldMember(mem))
+                .peek(o -> em.persist(o))
+                .peek(o -> setupItem(3, o))
+                .collect(Collectors.toList());
+    }
+
+    public void setupItem(int cnt, OrderInfo orderInfo) {
+        IntStream.range(1, cnt)
+                .mapToObj(i -> new Item("ITEM" + i))
+                .peek(item -> item.setOrderInfo(orderInfo))
+                .peek(em::persist)
+                .forEach(item -> orderInfo.getItems().add(item));
+    }
+
     @Transactional
     public void generate(int memberCount) {
         Company company = genCompany(0);
@@ -41,14 +60,19 @@ public class SetupHelper {
 
         relate(memberCount, company, genMember(() -> new BronzeMember()), c -> c.getBronzes());
         relate(memberCount, company, genMember(() -> new SilverMember()), c -> c.getSilvers());
-        relate(memberCount, company, genMember(() -> new GoldMember()), c -> c.getGolds());
+        List<GoldMember> members = relate(memberCount, company, genMember(() -> new GoldMember()), c -> c.getGolds());
+
+        for (GoldMember mem : members) {
+            genOrders(5, mem).stream().forEach(o -> mem.getOrderInfos().add(o));
+        }
     }
 
-    public <T extends MemberBase, C extends Collection<T>> void relate(int count, Company company, IntFunction<T> memFun, Function<Company, C> sup) {
-        IntStream.range(0, count)
+    public <T extends MemberBase, C extends Collection<T>> List<T> relate(int count, Company company, IntFunction<T> memFun, Function<Company, C> sup) {
+        return IntStream.range(0, count)
                 .mapToObj(memFun)
                 .peek(mem -> mem.setCompany(company))
                 .peek(mem -> sup.apply(company).add(mem))
-                .forEach(mem -> em.persist(mem));
+                .peek(mem -> em.persist(mem))
+                .collect(Collectors.toList());
     }
 }
