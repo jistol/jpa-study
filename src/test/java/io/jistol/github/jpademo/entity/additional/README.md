@@ -47,4 +47,6 @@
 - 연관 엔티티와 연관된 sub 엔티티도 같이 조회하기 위해서는 @NamedSubgraph를 사용    
 - setHint메서드를 통해 JPQL에서도 사용가능
 - QueryDsl에서는 직접 쿼리문은 만들기 때문에 setHint로 지정하기 보단 직접 fetchJoin을 걸어야 적용된다    
+- ROOT에서부터 조회
+- 이미 영속성 컨텍스트에 로드되어 있을 경우 적용되지 않음
  
