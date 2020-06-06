@@ -1,5 +1,6 @@
-package io.jistol.github.jpademo.entity.proxy;
+package io.jistol.github.jpademo.entity.relate.entity;
 
+import io.jistol.github.jpademo.entity.relate.entity.Member;
 import lombok.Data;
 
 import javax.persistence.Column;

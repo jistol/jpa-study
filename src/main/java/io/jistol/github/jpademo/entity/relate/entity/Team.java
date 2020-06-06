@@ -1,4 +1,4 @@
-package io.jistol.github.jpademo.entity.proxy;
+package io.jistol.github.jpademo.entity.relate.entity;
 
 import lombok.Data;
 

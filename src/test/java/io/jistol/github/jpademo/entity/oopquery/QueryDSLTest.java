@@ -2,21 +2,18 @@ package io.jistol.github.jpademo.entity.oopquery;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.support.QueryBase;
 import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import io.jistol.github.jpademo.entity.oopquery.dto.MemTeamDTO;
 import io.jistol.github.jpademo.entity.oopquery.entity.Member;
 import io.jistol.github.jpademo.entity.oopquery.entity.QMember;
 import io.jistol.github.jpademo.entity.oopquery.entity.QTeam;
-import io.jistol.github.jpademo.entity.proxy.Team;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +27,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import java.util.List;
-import java.util.Optional;
 
 @SpringBootTest
 @Slf4j

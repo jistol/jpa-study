@@ -1,33 +1,31 @@
-package io.jistol.github.jpademo.entity.proxy;
+package io.jistol.github.jpademo.entity.relate;
 
+import io.jistol.github.jpademo.entity.relate.entity.Member;
+import io.jistol.github.jpademo.entity.relate.entity.Order;
+import io.jistol.github.jpademo.entity.relate.entity.Team;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Or;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.PersistenceUnitUtil;
-import java.util.stream.IntStream;
+import javax.persistence.*;
+import javax.transaction.Transactional;
 
 @Slf4j
 @SpringBootTest
-@EntityScan("io.jistol.github.jpademo.entity.proxy")
+@EntityScan("io.jistol.github.jpademo.entity.relate")
+@Transactional
 public class ProxyTest {
-    @Autowired
+    @PersistenceContext
+    private EntityManager em;
+
+    @PersistenceUnit
     private EntityManagerFactory entityManagerFactory;
-    
+
     @Test
     public void proxyGetIdTest() {
         Long id = save().getId();
-        EntityManager em = entityManagerFactory.createEntityManager();
         PersistenceUnitUtil util = entityManagerFactory.getPersistenceUnitUtil();
-        EntityTransaction et = em.getTransaction();
-        et.begin();
-        
         Member m = em.getReference(Member.class, id);
         log.warn("member id is {}", m.getId());
         log.warn("member is initialized : {}", util.isLoaded(m));
@@ -39,11 +37,8 @@ public class ProxyTest {
         
         m.getOrders().remove(0);
         log.warn("remove order 0");
-        et.commit();
-        
-        
     }
-    
+
     @Test
     public void proxyTest() {
         Long id = save().getId();
@@ -52,21 +47,12 @@ public class ProxyTest {
     }
     
     private void remove(Long id) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        EntityTransaction et = em.getTransaction();
         log.warn("remove start");
-        et.begin();
-        
         em.remove(em.getReference(Member.class, id));
-        
-        et.commit();
-        
         log.warn("remove end");
-        
     }
     
     private void find(Long id) {
-        EntityManager em = entityManagerFactory.createEntityManager();
         log.warn("find Start");
         Member m = em.getReference(Member.class, id);
         log.warn("after getReference");
@@ -91,10 +77,6 @@ public class ProxyTest {
     
     private Member save() {
         Team t = saveTeam();
-        
-        EntityManager em = entityManagerFactory.createEntityManager();
-        EntityTransaction et = em.getTransaction();
-        et.begin();
         Member m = new Member();
         m.setName("Member1");
         m.setTeam(em.getReference(Team.class, t.getId()));
@@ -107,21 +89,13 @@ public class ProxyTest {
             order.setMember(m);
             m.getOrders().add(order);
         }
-        
-        et.commit();
         return m;
     }
     
     private Team saveTeam() {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        EntityTransaction et = em.getTransaction();
-        et.begin();
-        
         Team t = new Team();
         t.setName("TEAM1");
         em.persist(t);
-    
-        et.commit();
         return t;
     }
 }

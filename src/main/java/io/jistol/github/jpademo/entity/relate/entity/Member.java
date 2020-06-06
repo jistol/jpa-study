@@ -1,7 +1,6 @@
-package io.jistol.github.jpademo.entity.proxy;
+package io.jistol.github.jpademo.entity.relate.entity;
 
 import lombok.Data;
-import org.springframework.data.jpa.repository.EntityGraph;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
