@@ -29,7 +29,7 @@ public class AdvancedInTransactionTest {
 
     @BeforeEach
     public void setup() {
-        advancedSetupHelper.generate(15);
+        advancedSetupHelper.generateMember(15);
     }
 
     @Test
