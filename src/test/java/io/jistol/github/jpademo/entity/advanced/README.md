@@ -39,6 +39,39 @@ public Item getSelf() { return this; }
 ```    
 > Visitor보다 단순하고 수정이 없으며 동일한 효과 가능    
 
+N+1 이슈
+----
+- 즉시로딩(FetchType.EAGER)시에는 발생하지 않으나 직접 해당 엔티티만 쿼리할 경우 발생 가능   
+> ex) SELECT p FROM Parent p     
+> 자식객체는 부모객체의 ID별로 각각 조회됨 (N+1)     
+- 지연로딩(FetchType.LAZY)시, 쿼리시엔 발생하지 않으나 각 엔티티를 순회하면서 조회시 발생   
+```java
+// 단 건 조회시에는 쿼리를 한번만 실행
+parentList.get(0).getChildList(); // SELECT c FROM Child c WHERE c.parent_id = ?
+// 전체 순회시 N+1 발생   
+parentList.stream().forEach(Parent::getChildList); 
+```
+- 해결 방법    
+1. JPQL `join fetch` 사용   
+> ex) SELECT m from Member m join fetch m.orders     
+2. @BatchSize 사용 (hibernate)
+> 사이즈 만큼 IN절을 이용하여 한번에 조회해 옴.    
+> 즉시로딩시 모두 불러와야 하므로 전체 데이터를 size 만큼 나눠서 IN절로 로딩한다.     
+> 지연로딩시 첫 조회시 정해진 size만큼 조회, 추가 로딩시 size개수 만큼 추가 조회    
+3. @Fetch(FetchMode.SUBSELECT) 사용 (hibernate)
+> 즉시로딩 조회시 IN절의 subquery 형태로 조회     
+4. @EntityGraph 사용 (Spring)
+```java
+public interface XXXRepository extends JpaRepository<E, K> {
+    @EntityGraph(attributePaths= {"..."}, type=...)
+    Optional<E> findByAAA(K key);
+}
+``` 
+
+- 즉시로딩은 N+1/안쓰는 데이터 로딩 등 불합리
+- 모두 지연로딩을 사용하고 필요한 부분에만 페치조인을 적용하는것이 합리적  
+
+
 
 
 
