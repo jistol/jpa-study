@@ -71,6 +71,19 @@ public interface XXXRepository extends JpaRepository<E, K> {
 - 즉시로딩은 N+1/안쓰는 데이터 로딩 등 불합리
 - 모두 지연로딩을 사용하고 필요한 부분에만 페치조인을 적용하는것이 합리적  
 
+읽기전용 쿼리 성능 최적화
+----
+1. 메모리 최적화
+- 스칼라 쿼리 사용 (ex: SELECT m.name, m.age FROM Member m)
+- 읽기전용 쿼리 힌트 사용 (query.setHint("org.hibernate.readOnly", true)) 
+2. 플러시를 막아 속도 최적화
+- 읽기전용 Transaction 사용 (@Transaction(readOnly=true))
+> hibernate Session의 플러시모드를 MANUAL로 변경       
+> org.hibernate.Session은 JPA의 EntityManager 구현체 (unwrap메소드로 얻을수 있음.)     
+- propagation 설정으로 Transaction 밖에서 읽기
+> transction을 사용하지 않으므로 플러시 하지 않는다     
+> @Transction(propagation = Propagation.NOT_SUPPORTED)     
+
 
 
 

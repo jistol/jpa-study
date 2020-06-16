@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.2.7.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
+	id 'io.franzbecker.gradle-lombok' version '1.10'
 	id 'java'
 	id 'idea'
 }
@@ -38,6 +39,8 @@ sourceSets {
 compileQuerydsl {
 	options.annotationProcessorPath = configurations.querydsl
 }
+
+initQuerydslSourcesDir.dependsOn clean
 
 repositories {
 	mavenCentral()
