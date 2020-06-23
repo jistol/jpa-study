@@ -84,8 +84,26 @@ public interface XXXRepository extends JpaRepository<E, K> {
 > transction을 사용하지 않으므로 플러시 하지 않는다     
 > @Transction(propagation = Propagation.NOT_SUPPORTED)     
 
+배치 처리
+----
+1. JPA persist / select
+- 다량의 데이터 persist시 영속성 컨텍스트에 계속 쌓여 메모리를 잡아 먹지 않도록 주기적으로 flush 해줄것
+- 다량의 데이터 조회시 페이징 단위로 조회후 비지니스로직 처리. 처리완료시 flush후 다시 다음 단위를 조회한다.    
+2. 하이버네이트 기능
+- 무상태 세션 : 영속성 컨텍스트 (X), 2차캐시 (X)     
+```java 
+SessionFactory sf = entityManagerFactory.unwrap(SessionFactory.class);
+Session s = sf.openStatelessSession();
+```  
+- scroll을 이용하여 단위별로 가져옴 (2차캐시 기능 off 할것)    
 
-
+트랜잭션을 지원하는 쓰기 지연과 성능 최적화
+----
+- JDBC에서 제공하는 배치기능을 통해 다량의 SQL문을 한번에 보내야 네트워크 비용을 줄일수 있다.
+- JPA는 flush를 통해 구현 가능 (hibernate.jdbc.batch_size)
+- SQL배치는 같은 SQL일 때만 유효
+- IDENTITY 식별자 생성 전략은 DB에 저장해야 식별자가 생기므로  쓰기 지연 성능 최적화를 할 수 없다   
+- DB 테이블 row lock 최소화  
 
 
 
