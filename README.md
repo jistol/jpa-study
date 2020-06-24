@@ -7,4 +7,6 @@
 - [13장 웹 어플리케이션과 영속성 관리](/src/test/java/io/jistol/github/jpademo/entity/management)         
 - [14장 컬렉션과 부가 기능](/src/test/java/io/jistol/github/jpademo/entity/additional)              
 - [15장 고급 주제와 성능 최적화](/src/test/java/io/jistol/github/jpademo/entity/advanced)         
+- [16장 트랜잭션과 락, 2차 캐시](/src/test/java/io/jistol/github/jpademo/entity/translock)         
+
 
